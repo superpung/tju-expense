@@ -30,8 +30,10 @@ def parse(html_file):
             time_div = cells[0].find('div')
             if not time_div:
                 continue
-            date_str = time_div.text.strip()
+            date_str = time_div.text.strip().replace(".", "-")
             time_code = cells[0].find('div', class_='span_2').text.strip()
+            assert len(time_code) == 6
+            time_str = time_code[0:2] + ":" + time_code[2:4] + ":" + time_code[4:6]
 
             # 解析交易名称和编号
             trade_link = cells[1].find('a')
@@ -41,19 +43,18 @@ def parse(html_file):
             trade_no = cells[1].find('div', class_='span_2').text.replace('交易号：', '').strip()
 
             # 解析其他信息
-            counterparty = cells[2].text.strip()
+            target = cells[2].text.strip()
             amount = cells[3].text.strip()
-            payment_method = cells[4].text.strip()
+            payment = cells[4].text.strip()
             status = cells[5].find('span', class_='label').text.strip() if cells[5].find('span', class_='label') else ''
 
             transaction = {
-                'time': date_str,
-                'time_code': time_code,
+                'time': date_str + " " + time_str,
                 'trade_name': trade_name,
                 'trade_no': trade_no,
-                'counterparty': counterparty,
+                'target': target,
                 'amount': amount,
-                'payment_method': payment_method,
+                'payment': payment,
                 'status': status
             }
 
@@ -68,6 +69,6 @@ def parse(html_file):
 
     # 清理数据
     df['amount'] = df['amount'].str.replace('&nbsp;', '').astype(float)
-    df['payment_method'] = df['payment_method'].str.replace('&nbsp;', '').str.strip()
+    df['payment'] = df['payment'].str.replace('&nbsp;', '').str.strip()
 
     return df

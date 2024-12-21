@@ -6,6 +6,7 @@ def fetch(cookie, raw_file):
         raise ValueError("cookie is None")
     index_url = "http://59.67.37.10:8180/epay/myepay/index"
     index_response = requests.get(index_url, headers={"Cookie": cookie}).text
+    # TODO: get name
     meta_match = re.search(r'<meta name="_csrf" content="([^"]+)"', index_response)
     if meta_match:
         csrf = meta_match.group(1)

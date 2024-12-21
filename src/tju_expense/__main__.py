@@ -12,10 +12,10 @@ def setup_directories():
     data_dir = Path("data")
     raw_dir = data_dir / "raw"
     parsed_dir = data_dir / "parsed"
-    
+
     for dir_path in [data_dir, raw_dir, parsed_dir]:
         dir_path.mkdir(exist_ok=True)
-    
+
     return raw_dir, parsed_dir
 
 def get_cookie():
@@ -40,39 +40,36 @@ def get_cookie():
     if not cookie:
         print("错误：Cookie值不能为空")
         sys.exit(1)
-    
+
     return cookie
 
 def main():
     """主程序流程"""
     # 设置目录结构
     raw_dir, parsed_dir = setup_directories()
-    
+
     # 获取Cookie
     cookie = get_cookie()
-    
-    # 生成时间戳
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    
+
     try:
         # 1. 获取数据
+        filename = "data"
         print("正在获取交易数据...")
-        # raw_file = raw_dir / f"transactions_{timestamp}.html"
-        raw_file = raw_dir / "data.html"
+        raw_file = raw_dir / f"{filename}.html"
         fetch(cookie, raw_file)
         print(f"原始数据已保存至: {raw_file}")
-        
+
         # 2. 解析数据
         print("\n正在解析数据...")
-        parsed_file = parsed_dir / f"transactions_{timestamp}.csv"
+        parsed_file = parsed_dir / f"{filename}.csv"
         df = parse(raw_file)
         df.to_csv(parsed_file, index=False, encoding='utf-8')
         print(f"解析后的数据已保存至: {parsed_file}")
-        
+
         # 3. 分析数据
         print("\n开始分析数据...")
         analyze(df)
-        
+
     except Exception as e:
         print(f"错误: {str(e)}")
         sys.exit(1)
