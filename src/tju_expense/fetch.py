@@ -1,15 +1,22 @@
-import requests as requests
-from bs4 import BeautifulSoup
 import re
+import requests
+
+from bs4 import BeautifulSoup
+
 
 BASE_URL = "http://59.67.37.10:8180"
+
 
 class Fetcher:
     def __init__(self, cookie):
         self.cookie = cookie
         self.csrf = None
+        self.user_info = self.fetch_user_info()
 
     def get_user_info(self):
+        return self.user_info
+
+    def fetch_user_info(self):
         url = f"{BASE_URL}/epay/personaccount/index"
         headers = {
             'Cookie': self.cookie
@@ -59,7 +66,7 @@ class Fetcher:
 
         return records
 
-    def get_record(self, start, end, page):
+    def get_record(self, start, end, page, include_top_up=False):
         url = f"{BASE_URL}/epay/consume/query"
         data = {
             "pageNo": page,
@@ -72,6 +79,8 @@ class Fetcher:
             "_tradedirect": "on",
             "_csrf": self.csrf
         }
+        if not include_top_up:
+            data["tradedirect"] = "1"
         headers = {
             "Cookie": self.cookie
         }

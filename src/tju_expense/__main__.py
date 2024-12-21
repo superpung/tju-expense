@@ -40,20 +40,25 @@ def main():
     # 获取Cookie
     args = get_args()
 
-    parsed_file = data_dir / f"{args.start}_{args.end}.csv"
+    fetcher = Fetcher(args.cookie)
+    user_info = fetcher.get_user_info()
+    print(user_info)
+
+    user_dir = data_dir / user_info['stuid']
+    user_dir.mkdir(exist_ok=True)
+    filename = f"{args.start}_{args.end}"
+
+    parsed_file = user_dir / f"{filename}.csv"
     if parsed_file.exists():
         print(f"已存在解析后的数据: {parsed_file}")
     else:
         print("正在获取数据...")
-        fetcher = Fetcher(args.cookie)
-        user_info = fetcher.get_user_info()
-        print(user_info)
         records = fetcher.get_records(start=args.start, end=args.end)
         df = pd.DataFrame(records)
         df.to_csv(parsed_file, index=False, encoding='utf-8')
         print(f"解析后的数据已保存至: {parsed_file}")
 
-    analyze(parsed_file)
+    analyze(parsed_file, save_to=user_dir / f"{filename}.png")
 
 
 if __name__ == "__main__":

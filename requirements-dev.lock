@@ -10,10 +10,27 @@
 #   universal: false
 
 -e file:.
-numpy==2.2.0
+beautifulsoup4==4.12.3
+bs4==0.0.2
+certifi==2024.12.14
+charset-normalizer==3.4.0
+contourpy==1.3.1
+cycler==0.12.1
+fonttools==4.55.3
+idna==3.10
+kiwisolver==1.4.7
+matplotlib==3.10.0
+numpy==1.26.4
+packaging==24.2
 pandas==2.2.3
+pillow==11.0.0
+pyparsing==3.2.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2024.2
+requests==2.32.3
+seaborn==0.13.2
 six==1.17.0
+soupsieve==2.6
 tzdata==2024.2
+urllib3==2.2.3
