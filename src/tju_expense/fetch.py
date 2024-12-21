@@ -1,0 +1,139 @@
+import requests as requests
+from bs4 import BeautifulSoup
+import re
+
+BASE_URL = "http://59.67.37.10:8180"
+
+class Fetcher:
+    def __init__(self, cookie):
+        self.cookie = cookie
+        self.csrf = None
+
+    def get_user_info(self):
+        url = f"{BASE_URL}/epay/personaccount/index"
+        headers = {
+            'Cookie': self.cookie
+        }
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        meta_match = re.search(r'<meta name="_csrf" content="([^"]+)"', response.text)
+        if meta_match:
+            self.csrf = meta_match.group(1)
+        else:
+            raise ValueError("无法获取CSRF token")
+
+        res = {}
+
+        for tr in soup.find_all('tr'):
+            attr = []
+            for td in tr.find_all('td'):
+                text = ''.join(td.text.split())
+                attr.append(text)
+
+            if len(attr) != 2:
+                continue
+            if '学工号' in attr[0]:
+                res['stuid'] = attr[1]
+            elif '姓名' in attr[0]:
+                res['name'] = attr[1]
+            elif '现金资金' in attr[0]:
+                res['balance'] = re.search('\\d+\\.\\d+', attr[1]).group()
+
+        return res
+
+    def get_records(self, start, end):
+        """
+        获取交易记录
+        :param start: 开始日期，格式为2022-03-30
+        :param end: 结束日期，格式为2022-03-30
+        :return: 指定日期内的交易记录
+        """
+        records = []
+        res1, cnt = self.get_record(start, end, 1)
+        records.extend(res1)
+
+        for i in range(2, cnt + 1):
+            res2, cnt = self.get_record(start, end, i)
+            records.extend(res2)
+
+        return records
+
+    def get_record(self, start, end, page):
+        url = f"{BASE_URL}/epay/consume/query"
+        data = {
+            "pageNo": page,
+            "tabNo": "1",
+            "pager.offset": (page - 1) * 10,
+            "tradename": "",
+            "starttime": start,
+            "endtime": end,
+            "timetype": "1",
+            "_tradedirect": "on",
+            "_csrf": self.csrf
+        }
+        headers = {
+            "Cookie": self.cookie
+        }
+        s = requests.session()
+        response = s.post(url, data=data, headers=headers)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        res = []
+        page_cnt = 1
+        willend = False
+
+        block_words = ['现金', '交易成功', '详情']
+
+        last_water_amount = 0.0
+        last_water_day = ""
+
+        for tr in soup.find_all('tr'):
+            end = False
+            record = {}
+
+            for td in tr.find_all('td'):
+                text = ''.join(td.text.split())
+
+                if '当前' in text or (willend and '创建时间' in text):
+                    end = True
+                if '创建时间' in text:
+                    willend = True
+                    break
+                if '当前' in text:
+                    page_cnt = int(re.findall('\\d+', text)[1])
+                    break
+
+                if re.match('\\d+\\.\\d+\\.\\d+', text):
+                    day = text.replace('.', '-')[0:10]
+                    time = text[10:12] + ':' + text[12:14] + ':' + text[14:16]
+                    record['time'] = day + ' ' + time
+                elif re.match('.*交易号：\\d+', text):
+                    record['id'] = re.search('20\\d+', text).group()
+                    record['type'] = re.findall('.*交易号', text)[0].replace('交易号', '')
+                elif re.match('\\d+\\.\\d+', text):
+                    record['amount'] = text
+                # -11.00为冲正类型，退款到卡内
+                elif re.match('-\\d+\\.\\d+', text):
+                    record['amount'] = text
+                elif text not in block_words:
+                    record['place'] = text
+
+            if end:
+                break
+            if 'type' in record:
+                if '水控' in record['type']:
+                    day = record['time'][9:10]
+                    if last_water_day == day and last_water_amount != 0.0:
+                        amount = record['amount']
+                        record['amount'] = str(round(float(amount) + float(last_water_amount), 2))
+                        last_water_day = ""
+                        last_water_amount = 0.0
+                    else:
+                        last_water_day = day
+                        last_water_amount = record['amount']
+                        continue
+            if not record == {}:
+                res.append(record)
+
+        return res, page_cnt

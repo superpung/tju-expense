@@ -1,11 +1,12 @@
 import os
 import sys
 import argparse
-from datetime import datetime
+import pandas as pd
 from pathlib import Path
 from dotenv import load_dotenv
 
-from .utils import fetch, parse, analyze
+from .analyze import analyze
+from .fetch import Fetcher
 
 def setup_directories():
     """创建必要的目录结构"""
@@ -18,30 +19,26 @@ def setup_directories():
 
     return raw_dir, parsed_dir
 
-def get_cookie():
-    """获取Cookie值，优先从命令行参数获取，其次是环境变量，最后是用户输入"""
+def get_args():
+    """获取命令行参数，包括Cookie值和日期范围"""
     parser = argparse.ArgumentParser(description='获取并分析交易数据')
     parser.add_argument('--cookie', help='登录Cookie')
+    parser.add_argument('--start', help='开始日期', default='2022-12-01')
+    parser.add_argument('--end', help='结束日期', default='2022-12-31')
     args = parser.parse_args()
 
-    # 1. 检查命令行参数
-    if args.cookie:
-        return args.cookie
+    if not args.cookie:
+        load_dotenv()
+        args.cookie = os.getenv('COOKIE')
 
-    # 2. 检查环境变量
-    load_dotenv()  # 加载.env文件
-    cookie = os.getenv('COOKIE')
-    if cookie:
-        return cookie
+    if not args.cookie:
+        print("请输入登录Cookie值：")
+        args.cookie = input().strip()
+        if not args.cookie:
+            print("错误：Cookie值不能为空")
+            sys.exit(1)
 
-    # 3. 用户输入
-    print("请输入登录Cookie值：")
-    cookie = input().strip()
-    if not cookie:
-        print("错误：Cookie值不能为空")
-        sys.exit(1)
-
-    return cookie
+    return args
 
 def main():
     """主程序流程"""
@@ -49,30 +46,20 @@ def main():
     raw_dir, parsed_dir = setup_directories()
 
     # 获取Cookie
-    cookie = get_cookie()
+    args = get_args()
 
-    try:
-        # 1. 获取数据
-        filename = "data"
-        print("正在获取交易数据...")
-        raw_file = raw_dir / f"{filename}.html"
-        fetch(cookie, raw_file)
-        print(f"原始数据已保存至: {raw_file}")
+    filename = f"{args.start}_{args.end}"
+    parsed_file = parsed_dir / f"{filename}.csv"
+    fetcher = Fetcher(args.cookie)
+    user_info = fetcher.get_user_info()
+    print(user_info)
+    records = fetcher.get_records(start=args.start, end=args.end)
+    df = pd.DataFrame(records)
+    df.to_csv(parsed_file, index=False, encoding='utf-8')
+    print(f"解析后的数据已保存至: {parsed_file}")
 
-        # 2. 解析数据
-        print("\n正在解析数据...")
-        parsed_file = parsed_dir / f"{filename}.csv"
-        df = parse(raw_file)
-        df.to_csv(parsed_file, index=False, encoding='utf-8')
-        print(f"解析后的数据已保存至: {parsed_file}")
+    analyze(parsed_file)
 
-        # 3. 分析数据
-        print("\n开始分析数据...")
-        analyze(df)
-
-    except Exception as e:
-        print(f"错误: {str(e)}")
-        sys.exit(1)
 
 if __name__ == "__main__":
     main()
