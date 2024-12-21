@@ -63,7 +63,7 @@ def plot_consumption_heatmap(df, ax):
         daily_consumption,
         cmap=cmap,
         ax=ax,
-        cbar_kws={'label': '消费金额 (元)'},
+        cbar_kws={'label': '消费金额 (元)', "orientation":"horizontal", "aspect": 50},
         fmt='.0f',
         square=True,  # 使用正方形格子
         linewidths=1,  # 添加网格线
@@ -72,8 +72,8 @@ def plot_consumption_heatmap(df, ax):
 
     # 设置标签
     ax.set_title('消费热力图', pad=20)
-    ax.set_ylabel('星期')
-    ax.set_xlabel('周数')
+    ax.set_ylabel('')
+    ax.set_xlabel('')
     ax.set_yticklabels(['Mon', '', 'Wed', '', 'Fri', '', 'Sun'])
 
 def plot_daily_trend(df, ax):
