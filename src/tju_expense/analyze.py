@@ -13,12 +13,12 @@ def analyze(df_file, save_to):
     df['time'] = pd.to_datetime(df['time'])
 
     # 设置中文字体
-    plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
+    plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS']  # 用来正常显示中文标签
     plt.rcParams['axes.unicode_minus'] = False    # 用来正常显示负号
 
     # 创建纵向图表布局 (3行2列的网格，但热力图和趋势图分别占一整行)
     fig = plt.figure(figsize=(12, 15))
-    gs = plt.GridSpec(3, 2, height_ratios=[1.2, 1, 1])
+    gs = plt.GridSpec(3, 3, height_ratios=[1.2, 1, 1])
 
     # 1. 消费热力图 (第一行，跨越所有列)
     ax1 = fig.add_subplot(gs[0, :])
@@ -33,7 +33,7 @@ def analyze(df_file, save_to):
     plot_type_pie_chart(df, ax3)
 
     # 4. 消费地点统计 (第三行，第二列)
-    ax4 = fig.add_subplot(gs[2, 1])
+    ax4 = fig.add_subplot(gs[2, 1:])
     plot_place_statistics(df, ax4)
 
     plt.tight_layout()
@@ -82,7 +82,10 @@ def plot_daily_trend(df, ax):
     daily_sum = df.groupby('time')['amount'].sum().reset_index()
 
     # 计算7日移动平均线
-    daily_sum['MA7'] = daily_sum['amount'].rolling(window=7).mean()
+    daily_sum['MA7'] = daily_sum['amount'].rolling(
+        window=7,
+        min_periods=1  # 允许不足7天的数据也计算平均值
+    ).mean()
 
     # 绘制折线图和移动平均线
     ax.plot(daily_sum['time'], daily_sum['amount'],
@@ -92,8 +95,8 @@ def plot_daily_trend(df, ax):
 
     # 设置标签
     ax.set_title('每日消费趋势')
-    ax.set_xlabel('日期')
-    ax.set_ylabel('消费金额 (元)')
+    ax.set_xlabel('')
+    ax.set_ylabel('')
     ax.legend()
 
     # 旋转x轴日期标签
@@ -137,11 +140,12 @@ def plot_place_statistics(df, ax):
 
     # 设置标签
     ax.set_title('消费地点TOP10')
-    ax.set_xlabel('消费金额 (元)')
+    ax.set_xlabel('消费金额')
+    ax.set_ylabel('')
 
     # 在柱状图上添加数值标签
     for i, v in enumerate(place_stats):
-        ax.text(v, i, f'{v:.0f}元', va='center')
+        ax.text(v, i, f'{v:.0f}', va='center')
 
     # 调整字体大小
     ax.tick_params(axis='y', labelsize=8)
