@@ -74,7 +74,7 @@ def plot_consumption_heatmap(df, ax):
     ax.set_title('消费热力图', pad=20)
     ax.set_ylabel('星期')
     ax.set_xlabel('周数')
-    ax.set_yticklabels(['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+    ax.set_yticklabels(['Mon', '', 'Wed', '', 'Fri', '', 'Sun'])
 
 def plot_daily_trend(df, ax):
     """绘制每日消费趋势图"""
@@ -86,7 +86,7 @@ def plot_daily_trend(df, ax):
 
     # 绘制折线图和移动平均线
     ax.plot(daily_sum['time'], daily_sum['amount'],
-            alpha=0.6, label='日消费', marker='o', markersize=4)
+            alpha=0.6, label='日消费')
     ax.plot(daily_sum['time'], daily_sum['MA7'],
             'r-', label='7日移动平均', linewidth=2)
 
