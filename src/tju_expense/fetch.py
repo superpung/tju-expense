@@ -2,7 +2,7 @@ import re
 import requests
 
 from bs4 import BeautifulSoup
-
+from rich.progress import track
 
 BASE_URL = "http://59.67.37.10:8180"
 
@@ -60,7 +60,7 @@ class Fetcher:
         res1, cnt = self.get_record(start, end, 1)
         records.extend(res1)
 
-        for i in range(2, cnt + 1):
+        for i in track(range(2, cnt + 1), description="Fetching records"):
             res2, cnt = self.get_record(start, end, i)
             records.extend(res2)
 
