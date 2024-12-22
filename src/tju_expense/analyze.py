@@ -1,3 +1,9 @@
+#
+# Created on Sun Dec 22 2024
+#
+# Copyright (c) 2024 Super Lee
+#
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -94,9 +100,9 @@ def plot_daily_trend(df, ax):
 
     # 绘制折线图和移动平均线
     ax.plot(daily_sum['time'], daily_sum['amount'],
-            alpha=0.6, label='日消费')
+            '#a1c9f4', label='日消费')
     ax.plot(daily_sum['time'], daily_sum['MA7'],
-            'r-', label='7日平均', linewidth=2)
+            '#00468c', label='7日平均', linewidth=2)
 
     # 设置标签
     ax.set_title('每日消费趋势')
@@ -149,7 +155,7 @@ def plot_place_statistics(df, ax):
     bars = place_stats.plot(
         kind='barh',
         ax=ax,
-        color='skyblue'
+        color='#a1c9f4'
     )
 
     # 设置标签
