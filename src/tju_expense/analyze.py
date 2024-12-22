@@ -15,21 +15,30 @@ from matplotlib import font_manager
 from rich.console import Console
 from rich.table import Table
 
+
 font_manager.fontManager.addfont(Path(__file__).parent / "LXGWWenKai-Regular.ttf")
+
+console = Console()
+
 
 def analyze(df_file, title, save_to):
     """分析交易数据并生成可视化图表"""
-    df = pd.read_csv(df_file)
+    try:
+        df = pd.read_csv(df_file)
+    except pd.errors.EmptyDataError as e:
+        console.log("没有数据")
+        return None
+
     # 确保时间列为datetime类型
     df['time'] = pd.to_datetime(df['time'])
 
-    # 设置中文字体
     plt.rcParams['font.sans-serif'] = ['LXGW WenKai']  # 用来正常显示中文标签
     plt.rcParams['axes.unicode_minus'] = False    # 用来正常显示负号
+    plt.rcParams['font.size'] = 14  # 设置全局字体大小为14（可以根据需要调整）
 
     # 创建纵向图表布局 (3行2列的网格，但热力图和趋势图分别占一整行)
     fig = plt.figure(figsize=(12, 15))
-    gs = plt.GridSpec(3, 3, height_ratios=[1.2, 1, 1])
+    gs = plt.GridSpec(3, 3)
 
     # 1. 消费热力图 (第一行，跨越所有列)
     ax1 = fig.add_subplot(gs[0, :])
@@ -49,7 +58,7 @@ def analyze(df_file, title, save_to):
 
     plt.tight_layout()
     plt.savefig(save_to, dpi=300, bbox_inches='tight')
-    plt.show()
+    return True
 
 def plot_consumption_heatmap(df, ax, title):
     """绘制消费热力图"""
@@ -82,7 +91,7 @@ def plot_consumption_heatmap(df, ax, title):
     )
 
     # 设置标签
-    ax.set_title(title, pad=20)
+    ax.set_title(title, fontsize=24, pad=20)
     ax.set_ylabel('')
     ax.set_xlabel('')
     ax.set_yticklabels(['Mon', '', 'Wed', '', 'Fri', '', 'Sun'])
@@ -124,11 +133,8 @@ def plot_type_pie_chart(df, ax):
 
     # 绘制饼图
     explode = [0] * len(type_stats)
-    for index, _ in enumerate(explode):
-        if index == 1:
-            explode[1] = 0.02
-        elif index == 2:
-            explode[2] = 0.1
+    adjust_explode = [0, 0.02, 0.1, 0.15]
+    explode = [adjust_explode[i] if i < len(adjust_explode) else _ for i, _ in enumerate(explode)]
 
     wedges, texts, autotexts = ax.pie(
         type_stats,
@@ -141,12 +147,14 @@ def plot_type_pie_chart(df, ax):
     )
 
     # 设置标题和样式
-    ax.set_title('消费类型占比')
+    ax.set_title('消费类型占比', pad=20)
     plt.setp(autotexts, size=8, weight="bold")
     plt.setp(texts, size=8)
 
 def plot_place_statistics(df, ax):
     """绘制消费地点统计柱状图"""
+    df = df[~df['type'].str.contains('水|电', na=False)]
+
     # 统计每个地点的消费总额并取前10
     place_stats = df.groupby('place')['amount'].sum()
     place_stats = place_stats.nlargest(10).sort_values(ascending=True)
@@ -165,15 +173,15 @@ def plot_place_statistics(df, ax):
 
     # 在柱状图上添加数值标签
     for i, v in enumerate(place_stats):
-        ax.text(v, i, f'{v:.2f}', va='center')
-
-    # 调整字体大小
-    ax.tick_params(axis='y', labelsize=8)
+        ax.text(v, i, f'{v:.2f}', va='center', fontsize=7)
 
 def print_statistics(df_file):
     """打印基本统计信息"""
-    df = pd.read_csv(df_file)
-    console = Console()
+    try:
+        df = pd.read_csv(df_file)
+    except pd.errors.EmptyDataError as e:
+        console.log("没有数据")
+        return None
 
     # 创建表格
     table = Table(title="消费统计分析")
@@ -205,3 +213,5 @@ def print_statistics(df_file):
         type_table.add_row(index, str(row['count']), f"{row['sum']:.2f}元", f"{row['mean']:.2f}元")
 
     console.print(type_table, justify="center")
+
+    return True

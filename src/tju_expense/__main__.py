@@ -12,9 +12,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime
 from rich.console import Console
+from rich.prompt import Prompt
 from .analyze import analyze, print_statistics
 from .fetch import URLS, Fetcher
 
+console = Console()
+error_console = Console(stderr=True)
 
 def get_args():
     """Get command line arguments, including Cookie value and date range"""
@@ -28,21 +31,18 @@ def get_args():
         args.cookie = os.getenv('COOKIE')
 
     if not args.cookie:
-        print(f"Please login to {URLS['login']} and get Cookie value:")
-        args.cookie = input().strip()
+        console.print(f"1. 使用浏览器访问 {URLS['login']} 并登录")
+        console.print(f"2. F12 打开 开发者工具 - Application - Storage - Cookies, 拷贝其中 JSESSIONID 的 Value")
+        args.cookie = Prompt.ask("3. 粘贴 Cookie 至此处")
         if not args.cookie:
-            print("Error: Cookie value cannot be empty")
+            error_console.log("[red]Cookie 不能为空")
             sys.exit(1)
-        with open(".env", "a", encoding="utf-8") as f:
-            f.write(f"COOKIE=\"{args.cookie}\"")
 
     return args
 
 
 def main():
     """Main program flow"""
-    console = Console()
-
     # Set up directory structure
     data_dir = Path("data")
     data_dir.mkdir(exist_ok=True)
@@ -59,7 +59,7 @@ def main():
     user_dir = data_dir / user_info['stuid']
     user_dir.mkdir(exist_ok=True)
 
-    if args.year:
+    if args.year and args.year.isdigit() and 2000 <= int(args.year) <= datetime.now().year:
         year = args.year
     else:
         year = datetime.now().year
@@ -82,8 +82,9 @@ def main():
 
     with console.status("[bold green]正在绘制年度总结图表...") as status:
         fig_file = user_dir / f"{filename}.png"
-        analyze(parsed_file, title=f"在天大的{year}", save_to=fig_file)
-        console.log(f"完成! 已保存到 {fig_file}")
+        analyze_result = analyze(parsed_file, title=f"在天大的{year}", save_to=fig_file)
+        if analyze_result:
+            console.log(f"年度总结图表绘制完成! 已保存到 {fig_file}")
 
 
 if __name__ == "__main__":

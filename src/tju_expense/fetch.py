@@ -41,7 +41,7 @@ class Fetcher:
         if meta_match:
             self.csrf = meta_match.group(1)
         else:
-            raise ValueError("无法获取CSRF token")
+            raise ValueError("登录失败, 请重新获取 Cookie")
 
         res = {}
 
