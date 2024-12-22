@@ -104,7 +104,7 @@ def plot_daily_trend(df, ax):
     ax.set_ylabel('')
     ax.legend()
 
-    # 旋转x���日期标签
+    # 旋转x轴日期标签
     plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
 
 def plot_type_pie_chart(df, ax):
@@ -118,8 +118,11 @@ def plot_type_pie_chart(df, ax):
 
     # 绘制饼图
     explode = [0] * len(type_stats)
-    explode[1] = 0.02
-    explode[2] = 0.1
+    for index, _ in enumerate(explode):
+        if index == 1:
+            explode[1] = 0.02
+        elif index == 2:
+            explode[2] = 0.1
 
     wedges, texts, autotexts = ax.pie(
         type_stats,

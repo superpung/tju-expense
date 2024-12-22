@@ -76,7 +76,7 @@ def main():
 
     with console.status("[bold green]正在绘制年度总结图表...") as status:
         fig_file = user_dir / f"{filename}.png"
-        analyze(parsed_file, title=f"我在天大的{year}", save_to=fig_file)
+        analyze(parsed_file, title=f"在天大的{year}", save_to=fig_file)
         console.log(f"完成! 已保存到 {fig_file}")
 
 
