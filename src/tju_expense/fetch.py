@@ -34,7 +34,10 @@ class Fetcher:
         headers = {
             'Cookie': self.cookie
         }
-        response = requests.get(url, headers=headers)
+        try:
+            response = requests.get(url, headers=headers)
+        except requests.exceptions.InvalidSchema as _:
+            raise ValueError("登录失败, 请重新获取 Cookie, 或重启终端")
         soup = BeautifulSoup(response.text, 'html.parser')
 
         meta_match = re.search(r'<meta name="_csrf" content="([^"]+)"', response.text)
