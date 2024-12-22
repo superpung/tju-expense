@@ -67,7 +67,7 @@ class Fetcher:
         res1, cnt = self.get_record(start, end, 1)
         records.extend(res1)
 
-        for i in track(range(2, cnt + 1), description="Fetching records"):
+        for i in track(range(2, cnt + 1)):
             res2, cnt = self.get_record(start, end, i)
             records.extend(res2)
 
