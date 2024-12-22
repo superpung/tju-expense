@@ -11,30 +11,65 @@
 
 -e file:.
 beautifulsoup4==4.12.3
+    # via bs4
 bs4==0.0.2
+    # via tju-expense
 certifi==2024.12.14
+    # via requests
 charset-normalizer==3.4.0
+    # via requests
 contourpy==1.3.1
+    # via matplotlib
 cycler==0.12.1
+    # via matplotlib
 fonttools==4.55.3
+    # via matplotlib
 idna==3.10
+    # via requests
 kiwisolver==1.4.7
+    # via matplotlib
 markdown-it-py==3.0.0
+    # via rich
 matplotlib==3.10.0
+    # via seaborn
+    # via tju-expense
 mdurl==0.1.2
+    # via markdown-it-py
 numpy==1.26.4
+    # via contourpy
+    # via matplotlib
+    # via pandas
+    # via seaborn
+    # via tju-expense
 packaging==24.2
+    # via matplotlib
 pandas==2.2.3
+    # via seaborn
+    # via tju-expense
 pillow==11.0.0
+    # via matplotlib
 pygments==2.18.0
+    # via rich
 pyparsing==3.2.0
+    # via matplotlib
 python-dateutil==2.9.0.post0
+    # via matplotlib
+    # via pandas
 python-dotenv==1.0.1
+    # via tju-expense
 pytz==2024.2
+    # via pandas
 requests==2.32.3
+    # via tju-expense
 rich==13.9.4
+    # via tju-expense
 seaborn==0.13.2
+    # via tju-expense
 six==1.17.0
+    # via python-dateutil
 soupsieve==2.6
+    # via beautifulsoup4
 tzdata==2024.2
+    # via pandas
 urllib3==2.2.3
+    # via requests

@@ -5,11 +5,18 @@ from bs4 import BeautifulSoup
 from rich.progress import track
 
 BASE_URL = "http://59.67.37.10:8180"
-
+URLS = {
+    "login": f"{BASE_URL}/epay/person/index",
+    "user_info": f"{BASE_URL}/epay/personaccount/index",
+    "records": f"{BASE_URL}/epay/consume/query",
+}
 
 class Fetcher:
-    def __init__(self, cookie):
-        self.cookie = cookie
+    def __init__(self, cookie: str):
+        if not cookie.startswith("JSESSIONID"):
+            self.cookie = f"JSESSIONID={cookie}"
+        else:
+            self.cookie = cookie
         self.csrf = None
         self.user_info = self.fetch_user_info()
 
@@ -17,7 +24,7 @@ class Fetcher:
         return self.user_info
 
     def fetch_user_info(self):
-        url = f"{BASE_URL}/epay/personaccount/index"
+        url = URLS["user_info"]
         headers = {
             'Cookie': self.cookie
         }
@@ -67,7 +74,7 @@ class Fetcher:
         return records
 
     def get_record(self, start, end, page, include_top_up=False):
-        url = f"{BASE_URL}/epay/consume/query"
+        url = URLS["records"]
         data = {
             "pageNo": page,
             "tabNo": "1",

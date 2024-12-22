@@ -6,7 +6,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from .analyze import analyze
-from .fetch import Fetcher
+from .fetch import URLS, Fetcher
 
 
 def get_args():
@@ -22,11 +22,13 @@ def get_args():
         args.cookie = os.getenv('COOKIE')
 
     if not args.cookie:
-        print("Please enter the login Cookie value:")
+        print(f"Please login to {URLS['login']} and get Cookie value:")
         args.cookie = input().strip()
         if not args.cookie:
             print("Error: Cookie value cannot be empty")
             sys.exit(1)
+        with open(".env", "a", encoding="utf-8") as f:
+            f.write(f"COOKIE=\"{args.cookie}\"")
 
     return args
 
