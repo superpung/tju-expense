@@ -99,7 +99,7 @@ def plot_consumption_heatmap(df, ax, title):
 def plot_daily_trend(df, ax):
     """绘制每日消费趋势图"""
     # 计算每日消费总额
-    daily_sum = df.groupby('time')['amount'].sum().reset_index()
+    daily_sum = df.groupby(df['time'].dt.date)['amount'].sum().reset_index()
 
     # 计算7日移动平均线
     daily_sum['MA7'] = daily_sum['amount'].rolling(
