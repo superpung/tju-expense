@@ -10,7 +10,14 @@
 
 ![效果示例](docs/example.png)
 
+🎉 本项目已适配 Windows，无需配置环境即可使用！
+
+![Windows 执行结果](docs/windows.jpeg)
+
 ## 使用方法
+
+> [!NOTE]
+> 此方法无需 Python 环境。
 
 ### 0. 获取 Cookie
 
@@ -20,11 +27,42 @@
 
 ![拷贝 Cookie](docs/cookie.png)
 
-3. 在项目根目录下新建 `.env` 文件，写入以下内容：
+3. （可选）在执行目录下新建 `.env` 文件，写入以下内容：
 
 ```
 COOKIE="上一步拷贝的 Value"
 ```
+
+如不新建此文件，也可以在后续运行时手动粘贴至终端。
+
+### 1. 运行脚本
+
+从 [Releases](https://github.com/superpung/tju-expense/releases/latest) 页面下载可执行文件（支持 Windows、macOS 和 Linux），并在终端中打开下载好的文件所在的文件夹。
+
+执行：
+
+```sh
+.\tju-expense-windows.exe # Windows 用户
+./tju-expense-macos       # macOS 用户
+./tju-expense-linux       # Linux 用户
+```
+
+默认获取当前年份全年（1/1 - 12/31）的数据，你也可以通过以下方式指定年份：
+
+```sh
+.\tju-expense-windows.exe --year 2023 # Windows 用户
+./tju-expense-macos --year 2023       # macOS 用户
+./tju-expense-linux --year 2023       # Linux 用户
+```
+
+解析后的数据将保存至 `data/学号/年份.csv`，可以用于进一步分析。
+
+可视化结果将保存至 `data/学号/年份.png`。
+
+## 从源码构建
+
+> [!NOTE]
+> 此方法需要 Python 环境。
 
 ### 1. 安装依赖
 
