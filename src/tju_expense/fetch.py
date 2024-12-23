@@ -37,14 +37,14 @@ class Fetcher:
         try:
             response = requests.get(url, headers=headers)
         except requests.exceptions.InvalidSchema as _:
-            raise ValueError("登录失败, 请重新获取 Cookie, 或重启终端")
+            raise ValueError(f"登录失败, 请访问 {URLS['login']} 重新获取 Cookie, 或重启终端")
         soup = BeautifulSoup(response.text, 'html.parser')
 
         meta_match = re.search(r'<meta name="_csrf" content="([^"]+)"', response.text)
         if meta_match:
             self.csrf = meta_match.group(1)
         else:
-            raise ValueError("登录失败, 请重新获取 Cookie")
+            raise ValueError(f"登录失败, 请访问 {URLS['login']} 重新获取 Cookie")
 
         res = {}
 
@@ -110,9 +110,6 @@ class Fetcher:
 
         block_words = ['现金', '交易成功', '详情']
 
-        last_water_amount = 0.0
-        last_water_day = ""
-
         for tr in soup.find_all('tr'):
             end = False
             record = {}
@@ -146,18 +143,7 @@ class Fetcher:
 
             if end:
                 break
-            if 'type' in record:
-                if '水控' in record['type']:
-                    day = record['time'][9:10]
-                    if last_water_day == day and last_water_amount != 0.0:
-                        amount = record['amount']
-                        record['amount'] = str(round(float(amount) + float(last_water_amount), 2))
-                        last_water_day = ""
-                        last_water_amount = 0.0
-                    else:
-                        last_water_day = day
-                        last_water_amount = record['amount']
-                        continue
+
             if not record == {}:
                 res.append(record)
 
