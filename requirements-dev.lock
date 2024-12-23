@@ -10,6 +10,9 @@
 #   universal: false
 
 -e file:.
+altgraph==0.17.4
+    # via macholib
+    # via pyinstaller
 beautifulsoup4==4.12.3
     # via bs4
 bs4==0.0.2
@@ -28,6 +31,8 @@ idna==3.10
     # via requests
 kiwisolver==1.4.7
     # via matplotlib
+macholib==1.16.3
+    # via pyinstaller
 markdown-it-py==3.0.0
     # via rich
 matplotlib==3.10.0
@@ -43,6 +48,8 @@ numpy==1.26.4
     # via tju-expense
 packaging==24.2
     # via matplotlib
+    # via pyinstaller
+    # via pyinstaller-hooks-contrib
 pandas==2.2.3
     # via seaborn
     # via tju-expense
@@ -50,6 +57,9 @@ pillow==11.0.0
     # via matplotlib
 pygments==2.18.0
     # via rich
+pyinstaller==6.11.1
+pyinstaller-hooks-contrib==2024.10
+    # via pyinstaller
 pyparsing==3.2.0
     # via matplotlib
 python-dateutil==2.9.0.post0
@@ -65,6 +75,9 @@ rich==13.9.4
     # via tju-expense
 seaborn==0.13.2
     # via tju-expense
+setuptools==75.6.0
+    # via pyinstaller
+    # via pyinstaller-hooks-contrib
 six==1.17.0
     # via python-dateutil
 soupsieve==2.6

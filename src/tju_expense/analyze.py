@@ -7,16 +7,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from datetime import datetime
-import calendar
-from pathlib import Path
-import numpy as np
-from matplotlib import font_manager
 from rich.console import Console
 from rich.table import Table
 
-
-font_manager.fontManager.addfont(Path(__file__).parent / "LXGWWenKai-Regular.ttf")
 
 console = Console()
 
@@ -32,7 +25,7 @@ def analyze(df_file, title, save_to):
     # 确保时间列为datetime类型
     df['time'] = pd.to_datetime(df['time'])
 
-    plt.rcParams['font.sans-serif'] = ['LXGW WenKai']  # 用来正常显示中文标签
+    plt.rcParams['font.sans-serif'] = ['LXGW WenKai Lite']  # 用来正常显示中文标签
     plt.rcParams['axes.unicode_minus'] = False    # 用来正常显示负号
     plt.rcParams['font.size'] = 14  # 设置全局字体大小为14（可以根据需要调整）
 

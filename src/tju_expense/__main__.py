@@ -13,8 +13,9 @@ from dotenv import load_dotenv
 from datetime import datetime
 from rich.console import Console
 from rich.prompt import Prompt
-from .analyze import analyze, print_statistics
-from .fetch import URLS, Fetcher
+from tju_expense.analyze import analyze, print_statistics
+from tju_expense.fetch import URLS, Fetcher
+from matplotlib import font_manager
 
 console = Console()
 error_console = Console(stderr=True)
@@ -40,9 +41,22 @@ def get_args():
 
     return args
 
+def get_font_path():
+    if getattr(sys, 'frozen', False):
+        # 如果是打包后的可执行文件
+        base_path = Path(sys._MEIPASS) / "tju_expense"
+    else:
+        # 如果是开发环境
+        base_path = Path(__file__).parent
+
+    return base_path / "LXGWWenKaiLite-Regular.ttf"
 
 def main():
     """Main program flow"""
+    # 设置字体
+    font_path = get_font_path()
+    font_manager.fontManager.addfont(str(font_path))
+
     # Set up directory structure
     data_dir = Path("data")
     data_dir.mkdir(exist_ok=True)

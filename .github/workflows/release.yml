@@ -1,0 +1,50 @@
+name: Build and Release
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.10']
+        include:
+          - os: ubuntu-latest
+            asset_name: tju-expense-linux
+          - os: windows-latest
+            asset_name: tju-expense-windows.exe
+          - os: macos-latest
+            asset_name: tju-expense-macos
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install .
+
+    - name: Create executable
+      env:
+        ASSET_NAME: ${{ matrix.asset_name }}
+      run: |
+        pyinstaller tju-expense.spec
+
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.event.release.tag_name }}
+        files: ./dist/${{ matrix.asset_name }}
+        token: ${{ secrets.GITHUB_TOKEN }}
