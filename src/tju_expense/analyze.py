@@ -179,7 +179,7 @@ def print_statistics(df_file):
     df['time'] = pd.to_datetime(df['time'])
 
     # 创建表格
-    table = Table(title="消费统计分析")
+    table = Table(title="消费统计")
 
     # 添加列
     table.add_column("统计项", justify="left", style="cyan", no_wrap=True)
@@ -190,7 +190,6 @@ def print_statistics(df_file):
     daily_average = df.groupby(df['time'].dt.date)['amount'].sum().mean()
     table.add_row("平均每日消费", f"{daily_average:.2f}元")
     table.add_row("平均每笔消费", f"{df['amount'].mean():.2f}元")
-    table.add_row("最大单笔消费", f"{df['amount'].max():.2f}元")
     table.add_row("消费笔数", f"{len(df)}笔")
 
     console.print(table, justify="center")
@@ -210,5 +209,76 @@ def print_statistics(df_file):
         type_table.add_row(index, str(row['count']), f"{row['sum']:.2f}元", f"{row['mean']:.2f}元")
 
     console.print(type_table, justify="center")
+
+    # 每月消费统计
+    monthly_stats = df.groupby(df['time'].dt.to_period('M'))['amount'].agg(['count', 'sum']).reset_index()
+    monthly_stats['time'] = monthly_stats['time'].dt.to_timestamp()  # 转换为时间戳以便显示
+    monthly_table = Table(title="每月消费统计")
+    monthly_table.add_column("月份", justify="left", style="cyan", no_wrap=True)
+    monthly_table.add_column("消费笔数", justify="right", style="magenta")
+    monthly_table.add_column("总金额", justify="right", style="magenta")
+
+    for index, row in monthly_stats.iterrows():
+        monthly_table.add_row(f"{row['time'].month}月", str(row['count']), f"{row['sum']:.2f}元")
+
+    console.print(monthly_table, justify="center")
+
+    # 时段消费统计
+    time_slots = {
+        '早餐': (5, 11),  # 5点到11点
+        '午餐': (11, 17),  # 11点到17点
+        '晚餐': (17, 24)  # 17点到24点
+    }
+
+    time_slot_stats = {}
+    filtered_df = df[~df['type'].str.contains('水|电', na=False)]
+    for slot, (start, end) in time_slots.items():
+        mask = (filtered_df['time'].dt.hour >= start) & (filtered_df['time'].dt.hour < end)
+        time_slot_stats[slot] = filtered_df[mask]['amount'].agg(['count', 'sum'])
+
+    time_slot_table = Table(title="时段消费统计")
+    time_slot_table.add_column("时段", justify="left", style="cyan", no_wrap=True)
+    time_slot_table.add_column("消费笔数", justify="right", style="magenta")
+    time_slot_table.add_column("总金额", justify="right", style="magenta")
+    time_slot_table.add_column("平均金额", justify="right", style="magenta")
+
+    for slot, stats in time_slot_stats.items():
+        avg_amount = stats['sum'] / stats['count'] if stats['count'] > 0 else 0
+        time_slot_table.add_row(slot, str(stats['count']), f"{stats['sum']:.2f}元", f"{avg_amount:.2f}元")
+
+    console.print(time_slot_table, justify="center")
+
+    # 单笔消费
+    max_transaction = df.loc[df['amount'].idxmax()]
+    max_pos_transaction = filtered_df.loc[filtered_df['amount'].idxmax()]
+    min_transaction = df.loc[df['amount'].idxmin()]
+    min_pos_transaction = filtered_df.loc[filtered_df['amount'].idxmin()]
+    earliest_transaction = df.loc[df['time'].idxmin()]
+    latest_transaction = df.loc[df['time'].idxmax()]
+    earliest_time_transaction = df.loc[df['time'].dt.time.idxmin()]
+    latest_time_transaction = df.loc[df['time'].dt.time.idxmax()]
+    earliest_time_pos_transaction = filtered_df.loc[filtered_df['time'].dt.time.idxmin()]
+    latest_time_pos_transaction = filtered_df.loc[filtered_df['time'].dt.time.idxmax()]
+
+    # 创建表格
+    transaction_table = Table(title="单笔消费极值")
+    transaction_table.add_column("类型", justify="left", style="cyan", no_wrap=True)
+    transaction_table.add_column("金额", justify="right", style="magenta")
+    transaction_table.add_column("时间", justify="left", style="magenta")
+    transaction_table.add_column("地点", justify="left", style="magenta")
+
+    # 添加行
+    transaction_table.add_row("最大单笔消费", f"{max_transaction['amount']:.2f}元", str(max_transaction['time']), max_transaction['place'])
+    transaction_table.add_row("最大食堂单笔消费", f"{max_pos_transaction['amount']:.2f}元", str(max_pos_transaction['time']), max_pos_transaction['place'])
+    transaction_table.add_row("最小单笔消费", f"{min_transaction['amount']:.2f}元", str(min_transaction['time']), min_transaction['place'])
+    transaction_table.add_row("最小食堂单笔消费", f"{min_pos_transaction['amount']:.2f}元", str(min_pos_transaction['time']), min_pos_transaction['place'])
+    transaction_table.add_row("年度第一笔消费", f"{earliest_transaction['amount']:.2f}元", str(earliest_transaction['time']), earliest_transaction['place'])
+    transaction_table.add_row("年度最后一笔消费", f"{latest_transaction['amount']:.2f}元", str(latest_transaction['time']), latest_transaction['place'])
+    transaction_table.add_row("每日最早消费", f"{earliest_time_transaction['amount']:.2f}元", str(earliest_time_transaction['time']), earliest_time_transaction['place'])
+    transaction_table.add_row("每日最晚消费", f"{latest_time_transaction['amount']:.2f}元", str(latest_time_transaction['time']), latest_time_transaction['place'])
+    transaction_table.add_row("每日最早食堂消费", f"{earliest_time_pos_transaction['amount']:.2f}元", str(earliest_time_pos_transaction['time']), earliest_time_pos_transaction['place'])
+    transaction_table.add_row("每日最晚食堂消费", f"{latest_time_pos_transaction['amount']:.2f}元", str(latest_time_pos_transaction['time']), latest_time_pos_transaction['place'])
+
+    console.print(transaction_table, justify="center")
 
     return True

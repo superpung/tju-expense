@@ -1,6 +1,6 @@
 [project]
 name = "tju-expense"
-version = "0.1.0"
+version = "0.2.0"
 description = "Add your description here"
 authors = [
     { name = "SUPER", email = "hi@repus.me" }
