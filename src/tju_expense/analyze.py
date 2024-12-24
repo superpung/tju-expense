@@ -29,9 +29,9 @@ def analyze(df_file, title, save_to):
     plt.rcParams['axes.unicode_minus'] = False    # 用来正常显示负号
     plt.rcParams['font.size'] = 14  # 设置全局字体大小为14（可以根据需要调整）
 
-    # 创建纵向图表布局 (3行2列的网格，但热力图和趋势图分别占一整行)
-    fig = plt.figure(figsize=(12, 15))
-    gs = plt.GridSpec(3, 3)
+    # 创建纵向图表布局
+    fig = plt.figure(figsize=(12, 16))
+    gs = plt.GridSpec(4, 3, figure=fig) # 必须要加 figure=fig
 
     # 1. 消费热力图 (第一行，跨越所有列)
     ax1 = fig.add_subplot(gs[0, :])
@@ -41,13 +41,25 @@ def analyze(df_file, title, save_to):
     ax2 = fig.add_subplot(gs[1, :])
     plot_daily_trend(df, ax2)
 
-    # 3. 消费类型饼图 (第三行，第一列)
+    # 3. 绘制每日消费散点图 (第三行，第一列)
     ax3 = fig.add_subplot(gs[2, 0])
-    plot_type_pie_chart(df, ax3)
+    plot_daily_scatter(df, ax3)
 
     # 4. 消费地点统计 (第三行，第二列)
     ax4 = fig.add_subplot(gs[2, 1:])
     plot_place_statistics(df, ax4)
+
+    # 5. 消费类型饼图 (第四行，第一列)
+    ax5 = fig.add_subplot(gs[3, 0])
+    plot_type_pie_chart(df, ax5)
+
+    # 6. 每月消费统计饼图 (第四行，第二列)
+    ax6 = fig.add_subplot(gs[3, 1])
+    plot_monthly_pie_chart(df, ax6)
+
+    # 7. 时段消费统计饼图 (第四行，第三列)
+    ax7 = fig.add_subplot(gs[3, 2])
+    plot_time_slot_pie_chart(df, ax7)
 
     plt.tight_layout()
     plt.savefig(save_to, dpi=300, bbox_inches='tight')
@@ -115,6 +127,43 @@ def plot_daily_trend(df, ax):
     # 旋转x轴日期标签
     plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
 
+def plot_daily_scatter(df, ax):
+    """绘制每日消费散点图"""
+    ax.scatter(df['time'].dt.hour + df['time'].dt.minute / 60, df['amount'], color='#6baed6', alpha=0.6)  # 修改为时间（0:00-24:00）
+
+    # 设置x轴刻度
+    ax.set_xticks([0, 4, 8, 12, 16, 20, 24])  # 设置x轴刻度为0, 4, 8, 12, 16, 20, 24
+    ax.set_xticklabels(['0', '4', '8', '12', '16', '20', '24'])  # 设置x轴标签
+
+    # 设置标签
+    ax.set_title('消费时间分布')
+    ax.set_xlabel('时间')
+    ax.set_ylabel('')
+
+def plot_place_statistics(df, ax):
+    """绘制消费地点统计柱状图"""
+    df = df[~df['type'].str.contains('水|电', na=False)]
+
+    # 统计每个地点的消费总额并取前10
+    place_stats = df.groupby('place')['amount'].sum()
+    place_stats = place_stats.nlargest(10).sort_values(ascending=True)
+
+    # 绘制横向柱状图
+    bars = place_stats.plot(
+        kind='barh',
+        ax=ax,
+        color='#6baed6'
+    )
+
+    # 设置标签
+    ax.set_title('消费地点TOP10')
+    ax.set_xlabel('消费金额')
+    ax.set_ylabel('')
+
+    # 在柱状图上添加数值标签
+    for i, v in enumerate(place_stats):
+        ax.text(v, i, f'{v:.2f}', va='center', fontsize=7)
+
 def plot_type_pie_chart(df, ax):
     """绘制消费类型饼图"""
     # 统计每种类型的消费总额
@@ -136,7 +185,7 @@ def plot_type_pie_chart(df, ax):
         startangle=90,
         pctdistance=0.85,
         explode=explode,
-        colors=sns.color_palette("pastel")
+        colors=sns.color_palette("Blues")
     )
 
     # 设置标题和样式
@@ -144,29 +193,54 @@ def plot_type_pie_chart(df, ax):
     plt.setp(autotexts, size=8, weight="bold")
     plt.setp(texts, size=8)
 
-def plot_place_statistics(df, ax):
-    """绘制消费地点统计柱状图"""
-    df = df[~df['type'].str.contains('水|电', na=False)]
+def plot_monthly_pie_chart(df, ax):
+    """绘制每月消费统计饼图"""
+    # 统计每月消费总额
+    monthly_stats = df.groupby(df['time'].dt.to_period('M'))['amount'].sum()
 
-    # 统计每个地点的消费总额并取前10
-    place_stats = df.groupby('place')['amount'].sum()
-    place_stats = place_stats.nlargest(10).sort_values(ascending=True)
-
-    # 绘制横向柱状图
-    bars = place_stats.plot(
-        kind='barh',
-        ax=ax,
-        color='#a1c9f4'
+    # 绘制饼图
+    wedges, texts, autotexts = ax.pie(
+        monthly_stats,
+        labels=[f"{month.month}月" for month in monthly_stats.index],  # 修改为X月的形式
+        autopct='%1.1f%%',
+        startangle=90,
+        pctdistance=0.85,
+        colors=sns.color_palette("Blues")
     )
 
-    # 设置标签
-    ax.set_title('消费地点TOP10')
-    ax.set_xlabel('消费金额')
-    ax.set_ylabel('')
+    # 设置标题和样式
+    ax.set_title('每月消费占比', pad=20)
+    plt.setp(autotexts, size=8, weight="bold")
+    plt.setp(texts, size=8)
 
-    # 在柱状图上添加数值标签
-    for i, v in enumerate(place_stats):
-        ax.text(v, i, f'{v:.2f}', va='center', fontsize=7)
+def plot_time_slot_pie_chart(df, ax):
+    """绘制时段消费统计饼图"""
+    time_slots = {
+        '早餐': (5, 11),  # 5点到11点
+        '午餐': (11, 17),  # 11点到17点
+        '晚餐': (17, 24)  # 17点到24点
+    }
+
+    time_slot_stats = {}
+    filtered_df = df[~df['type'].str.contains('水|电', na=False)]
+    for slot, (start, end) in time_slots.items():
+        mask = (filtered_df['time'].dt.hour >= start) & (filtered_df['time'].dt.hour < end)
+        time_slot_stats[slot] = filtered_df[mask]['amount'].sum()
+
+    # 绘制饼图
+    wedges, texts, autotexts = ax.pie(
+        time_slot_stats.values(),
+        labels=time_slot_stats.keys(),
+        autopct='%1.1f%%',
+        startangle=90,
+        pctdistance=0.85,
+        colors=sns.color_palette("Blues")
+    )
+
+    # 设置标题和样式
+    ax.set_title('时段消费占比', pad=20)
+    plt.setp(autotexts, size=8, weight="bold")
+    plt.setp(texts, size=8)
 
 def print_statistics(df_file):
     """打印基本统计信息"""

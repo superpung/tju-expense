@@ -1,7 +1,7 @@
 [project]
 name = "tju-expense"
-version = "0.2.0"
-description = "Add your description here"
+version = "0.3.0"
+description = "天津大学校园卡年度消费报告"
 authors = [
     { name = "SUPER", email = "hi@repus.me" }
 ]
