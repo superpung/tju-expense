@@ -176,6 +176,8 @@ def print_statistics(df_file):
         console.log("没有数据")
         return None
 
+    df['time'] = pd.to_datetime(df['time'])
+
     # 创建表格
     table = Table(title="消费统计分析")
 
@@ -185,7 +187,9 @@ def print_statistics(df_file):
 
     # 添加行
     table.add_row("总消费金额", f"{df['amount'].sum():.2f}元")
-    table.add_row("平均每日消费", f"{df['amount'].mean():.2f}元")
+    daily_average = df.groupby(df['time'].dt.date)['amount'].sum().mean()
+    table.add_row("平均每日消费", f"{daily_average:.2f}元")
+    table.add_row("平均每笔消费", f"{df['amount'].mean():.2f}元")
     table.add_row("最大单笔消费", f"{df['amount'].max():.2f}元")
     table.add_row("消费笔数", f"{len(df)}笔")
 
