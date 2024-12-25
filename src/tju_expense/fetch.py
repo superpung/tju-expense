@@ -37,14 +37,14 @@ class Fetcher:
         try:
             response = requests.get(url, headers=headers)
         except requests.exceptions.InvalidSchema as _:
-            raise ValueError(f"登录失败, 请访问 {URLS['login']} 重新获取 Cookie, 或重启终端")
+            raise ConnectionError(f"[登录失败] 请确认正在使用校园网环境, 关闭终端代理, 或重启终端")
         soup = BeautifulSoup(response.text, 'html.parser')
 
         meta_match = re.search(r'<meta name="_csrf" content="([^"]+)"', response.text)
         if meta_match:
             self.csrf = meta_match.group(1)
         else:
-            raise ValueError(f"登录失败, 请访问 {URLS['login']} 重新获取 Cookie")
+            raise ConnectionError(f"[登录失败] 请访问 {URLS['login']} 重新获取 Cookie")
 
         res = {}
 

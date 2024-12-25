@@ -11,11 +11,12 @@ import pandas as pd
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime
+from matplotlib import font_manager
 from rich.console import Console
 from rich.prompt import Prompt
 from tju_expense.analyze import analyze, print_statistics
 from tju_expense.fetch import URLS, Fetcher
-from matplotlib import font_manager
+from importlib.metadata import version
 
 console = Console()
 error_console = Console(stderr=True)
@@ -32,6 +33,7 @@ def get_args():
         args.cookie = os.getenv('COOKIE')
 
     if not args.cookie:
+        console.log(f"未定义 Cookie, 请根据以下步骤获取 Cookie:")
         console.print(f"1. 使用浏览器访问 {URLS['login']} 并登录")
         console.print(f"2. F12 打开 开发者工具 - Application - Storage - Cookies, 拷贝其中 JSESSIONID 的 Value")
         args.cookie = Prompt.ask("3. 粘贴 Cookie 至此处")
@@ -53,6 +55,9 @@ def get_font_path():
 
 def main():
     """Main program flow"""
+    console.rule(f"[bold]TJU Expense[/bold] [dim]v{version('tju-expense')}[/dim]")
+    console.rule(f"[italic]https://github.com/superpung/tju-expense")
+
     # 设置字体
     font_path = get_font_path()
     font_manager.fontManager.addfont(str(font_path))
@@ -64,10 +69,13 @@ def main():
     # Get Cookie
     args = get_args()
 
-    fetcher = Fetcher(args.cookie)
+    try:
+        fetcher = Fetcher(args.cookie)
+    except ConnectionError as e:
+        error_console.log(f"[red]{e}")
+        sys.exit(1)
+
     user_info = fetcher.get_user_info()
-    console.rule(f"[bold]TJU Expense")
-    console.rule(f"[italic]https://github.com/superpung/tju-expense")
     console.print(f"你好, [bold]{user_info['name']}[/bold]!")
 
     user_dir = data_dir / user_info['stuid']
