@@ -1,5 +1,12 @@
 # TJU-Expense
 
+[![GitHub Release](https://img.shields.io/github/v/release/superpung/tju-expense?color=00468c)](https://github.com/superpung/tju-expense/releases/latest)
+[![GitHub Downloads](https://img.shields.io/github/downloads/superpung/tju-expense/total?color=00468c)](https://github.com/superpung/tju-expense/releases/latest)
+[![GitHub License](https://img.shields.io/github/license/superpung/tju-expense?color=00468c)](https://github.com/superpung/tju-expense/releases/latest)
+[![Download for Windows](https://img.shields.io/badge/Windows-black?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjZmZmZmZmIiBkPSJtMTIgMTZsLTUtNWwxLjQtMS40NWwyLjYgMi42VjRoMnY4LjE1bDIuNi0yLjZMMTcgMTF6bS02IDRxLS44MjUgMC0xLjQxMi0uNTg3VDQgMTh2LTNoMnYzaDEydi0zaDJ2M3EwIC44MjUtLjU4NyAxLjQxM1QxOCAyMHoiLz48L3N2Zz4=)](https://github.com/superpung/tju-expense/releases/latest/download/tju-expense-windows.exe)
+[![Download for macOS](https://img.shields.io/badge/macOS-black?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjZmZmZmZmIiBkPSJtMTIgMTZsLTUtNWwxLjQtMS40NWwyLjYgMi42VjRoMnY4LjE1bDIuNi0yLjZMMTcgMTF6bS02IDRxLS44MjUgMC0xLjQxMi0uNTg3VDQgMTh2LTNoMnYzaDEydi0zaDJ2M3EwIC44MjUtLjU4NyAxLjQxM1QxOCAyMHoiLz48L3N2Zz4=)](https://github.com/superpung/tju-expense/releases/latest/download/tju-expense-macos)
+[![Download for Linux](https://img.shields.io/badge/Linux-black?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjZmZmZmZmIiBkPSJtMTIgMTZsLTUtNWwxLjQtMS40NWwyLjYgMi42VjRoMnY4LjE1bDIuNi0yLjZMMTcgMTF6bS02IDRxLS44MjUgMC0xLjQxMi0uNTg3VDQgMTh2LTNoMnYzaDEydi0zaDJ2M3EwIC44MjUtLjU4NyAxLjQxM1QxOCAyMHoiLz48L3N2Zz4=)](https://github.com/superpung/tju-expense/releases/latest/download/tju-expense-linux)
+
 一年过去了，你在天大食堂里花的钱都花在哪儿了？
 
 ## 简介
