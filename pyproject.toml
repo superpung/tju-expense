@@ -1,6 +1,6 @@
 [project]
 name = "tju-expense"
-version = "0.3.0"
+version = "0.3.1"
 description = "天津大学校园卡年度消费报告"
 authors = [
     { name = "SUPER", email = "hi@repus.me" }
