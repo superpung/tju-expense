@@ -28,7 +28,7 @@
 
 ### 0. 获取 Cookie
 
-1. 使用浏览器访问 [校园卡网站](http://59.67.37.10:8180/epay/person/index) 并登录
+1. 使用浏览器访问 [天津大学财务处](https://finance.tju.edu.cn/)，点击“一卡通服务平台”（或直接访问 [校园卡网站](http://59.67.37.10:8180/epay/person/index)）并登录
 
 2. `F12` 打开 开发者工具 - Application - Storage - Cookies，拷贝其中 `JSESSIONID` 的 `Value`
 

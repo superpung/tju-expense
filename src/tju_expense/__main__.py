@@ -34,7 +34,7 @@ def get_args():
 
     if not args.cookie:
         console.log(f"未定义 Cookie, 请根据以下步骤获取 Cookie:")
-        console.print(f"1. 使用浏览器访问 {URLS['login']} 并登录")
+        console.print(f"1. 使用浏览器访问天津大学财务处官网 {URLS['finance']} , 点击\"一卡通服务平台\" (或直接访问校园卡网站 {URLS['login']} ) 并登录")
         console.print(f"2. F12 打开 开发者工具 - Application - Storage - Cookies, 拷贝其中 JSESSIONID 的 Value")
         args.cookie = Prompt.ask("3. 粘贴 Cookie 至此处")
         if not args.cookie:
