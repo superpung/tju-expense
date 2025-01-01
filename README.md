@@ -44,22 +44,47 @@ COOKIE="上一步拷贝的 Value"
 
 ### 1. 运行脚本
 
-从 [Releases](https://github.com/superpung/tju-expense/releases/latest) 页面下载可执行文件（支持 Windows、macOS 和 Linux），并在终端中打开下载好的文件所在的文件夹。
+从 [Releases](https://github.com/superpung/tju-expense/releases/latest) 页面下载可执行文件（支持 Windows、macOS 和 Linux）。
 
-执行：
+#### Windows 用户
+
+双击打开下载好的 `exe` 文件即可运行。根据终端显示的提示，输入 Cookie 和统计年份等信息。
+
+> [!TIP]
+> 你也可以选择在指定终端中运行。
+>
+> 在终端中打开下载好的文件所在的文件夹，执行：
+>
+> ```sh
+> .\tju-expense-windows.exe
+> ```
+>
+> 此时也可以通过以下方式指定统计年份为 2023 年：
+>
+> ```sh
+> .\tju-expense-windows.exe --year 2023
+> ```
+
+解析后的数据将保存至 `data\学号\年份.csv`，可以用于进一步分析。
+
+可视化结果将保存至 `data\学号\年份.png`。
+
+#### macOS 和 Linux 用户
+
+在终端中打开下载好的文件所在的文件夹，执行：
 
 ```sh
-.\tju-expense-windows.exe # Windows 用户
-./tju-expense-macos       # macOS 用户
-./tju-expense-linux       # Linux 用户
+./tju-expense-macos # macOS 用户
+./tju-expense-linux # Linux 用户
 ```
 
-默认获取当前年份全年（1/1 - 12/31）的数据，你也可以通过以下方式指定年份：
+根据终端显示的提示，输入 Cookie 和统计年份等信息。
+
+你也可以通过以下方式指定统计年份为 2023 年：
 
 ```sh
-.\tju-expense-windows.exe --year 2023 # Windows 用户
-./tju-expense-macos --year 2023       # macOS 用户
-./tju-expense-linux --year 2023       # Linux 用户
+./tju-expense-macos --year 2023 # macOS 用户
+./tju-expense-linux --year 2023 # Linux 用户
 ```
 
 解析后的数据将保存至 `data/学号/年份.csv`，可以用于进一步分析。
@@ -92,7 +117,9 @@ pip install -e .
 python -m tju_expense
 ```
 
-默认获取当前年份全年（1/1 - 12/31）的数据，你也可以通过以下方式指定年份：
+根据终端显示的提示，输入 Cookie 和统计年份等信息。
+
+你也可以通过以下方式指定统计年份为 2023 年：
 
 ```bash
 python -m tju_expense --year 2023
