@@ -12,6 +12,7 @@ from rich.progress import track
 
 BASE_URL = "http://59.67.37.10:8180"
 URLS = {
+    "repo": "https://github.com/superpung/tju-expense",
     "finance": "https://finance.tju.edu.cn/",
     "login": f"{BASE_URL}/epay/person/index",
     "user_info": f"{BASE_URL}/epay/personaccount/index",

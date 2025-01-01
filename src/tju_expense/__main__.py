@@ -7,6 +7,7 @@
 import os
 import sys
 import argparse
+import re
 import pandas as pd
 from pathlib import Path
 from dotenv import load_dotenv
@@ -33,9 +34,9 @@ def get_args():
         args.cookie = os.getenv('COOKIE')
 
     if not args.cookie:
-        console.log(f"未定义 Cookie, 请根据以下步骤获取 Cookie:")
+        console.log("未定义 Cookie, 请根据以下步骤获取 Cookie:")
         console.print(f"1. 使用浏览器访问天津大学财务处官网 {URLS['finance']} , 点击\"一卡通服务平台\" (或直接访问校园卡网站 {URLS['login']} ) 并登录")
-        console.print(f"2. F12 打开 开发者工具 - Application - Storage - Cookies, 拷贝其中 JSESSIONID 的 Value")
+        console.print("2. F12 打开 开发者工具 - Application - Storage - Cookies, 拷贝其中 JSESSIONID 的 Value")
         args.cookie = Prompt.ask("3. 粘贴 Cookie 至此处")
         if not args.cookie:
             error_console.log("[red]Cookie 不能为空")
@@ -56,7 +57,7 @@ def get_font_path():
 def main():
     """Main program flow"""
     console.rule(f"[bold]TJU Expense[/bold] [dim]v{version('tju-expense')}[/dim]")
-    console.rule(f"[italic]https://github.com/superpung/tju-expense")
+    console.rule(f"[italic]{URLS['repo']}")
 
     # 设置字体
     font_path = get_font_path()
@@ -92,10 +93,13 @@ def main():
             default=default_year,
             show_default=False
         )
-    if input_year.isdigit() and 2000 <= int(input_year) <= current_date.year:
-        year = input_year
+
+    year_match = re.search(r'20\d{2}', input_year)
+    if year_match:
+        year = year_match.group()
     else:
         year = default_year
+        error_console.log(f"[red]无法解析输入的年份: {input_year}, 本次将统计默认年份数据, 请稍后重试并输入 4 位数字的年份")
 
     start, end = f"{year}-01-01", f"{year}-12-31"
     console.rule(f"[bold]{year} 年")
