@@ -81,10 +81,21 @@ def main():
     user_dir = data_dir / user_info['stuid']
     user_dir.mkdir(exist_ok=True)
 
-    if args.year and args.year.isdigit() and 2000 <= int(args.year) <= datetime.now().year:
-        year = args.year
+    input_year = None
+    current_date = datetime.now()
+    default_year = str(current_date.year - 1) if current_date.month <= 1 else str(current_date.year)
+    if args.year:
+        input_year = args.year
     else:
-        year = datetime.now().year
+        input_year = Prompt.ask(
+            f"请输入统计年份 [dim](回车默认 {default_year})[/dim]",
+            default=default_year,
+            show_default=False
+        )
+    if input_year.isdigit() and 2000 <= int(input_year) <= current_date.year:
+        year = input_year
+    else:
+        year = default_year
 
     start, end = f"{year}-01-01", f"{year}-12-31"
     console.rule(f"[bold]{year} 年")
@@ -104,7 +115,11 @@ def main():
 
     with console.status("[bold green]正在绘制年度总结图表...") as status:
         fig_file = user_dir / f"{filename}.png"
-        analyze_result = analyze(parsed_file, title=f"在天大的{year}", save_to=fig_file)
+        try:
+            analyze_result = analyze(parsed_file, title=f"在天大的{year}", save_to=fig_file)
+        except ValueError as e:
+            console.log(f"{year} 年暂时还没有足够多的数据可以绘制图表, 请今年晚些再来看哦!")
+            analyze_result = False
         if analyze_result:
             console.log(f"年度总结图表绘制完成! 已保存到 {fig_file}")
 
