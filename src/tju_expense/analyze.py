@@ -67,12 +67,27 @@ def analyze(df_file, title, save_to):
 
 def plot_consumption_heatmap(df, ax, title):
     """绘制消费热力图"""
-    # 准备数据
-    df['weekday'] = df['time'].dt.weekday
-    df['week'] = df['time'].dt.isocalendar().week
+    # 构造时间周期
+    max_date = df['time'].max().date()
+    start_of_year = pd.to_datetime(max_date.year * 10000 + 101, format='%Y%m%d').date()
+    full_date_range = pd.date_range(start=start_of_year, end=max_date, freq='D')
 
-    # 计算每天的消费总额
-    daily_consumption = df.pivot_table(
+    # 将未消费的天补一条值为0的消费，并按天累加
+    daily_sum = (
+        df.assign(date=df['time'].dt.normalize())  # 将 time 转成日期
+        .groupby('date')['amount']
+        .sum()
+        .reindex(full_date_range, fill_value=0)  # 用完整日期索引补齐缺失天数
+        .reset_index()
+    )
+    daily_sum.columns = ['time', 'amount']
+
+    # 准备数据
+    daily_sum['weekday'] = daily_sum['time'].dt.weekday
+    daily_sum['week'] = daily_sum['time'].dt.isocalendar().week
+
+    # 转换为透视表
+    daily_consumption = daily_sum.pivot_table(
         values='amount',
         index='weekday',
         columns='week',
@@ -103,8 +118,20 @@ def plot_consumption_heatmap(df, ax, title):
 
 def plot_daily_trend(df, ax):
     """绘制每日消费趋势图"""
-    # 计算每日消费总额
-    daily_sum = df.groupby(df['time'].dt.date)['amount'].sum().reset_index()
+    # 构造时间周期
+    max_date = df['time'].max().date()
+    start_of_year = pd.to_datetime(max_date.year * 10000 + 101, format='%Y%m%d').date()
+    full_date_range = pd.date_range(start=start_of_year, end=max_date, freq='D')
+
+    # 将未消费的天补一条值为0的消费，并按天累加
+    daily_sum = (
+        df.assign(date=df['time'].dt.normalize())  # 将 time 转成日期
+        .groupby('date')['amount']
+        .sum()
+        .reindex(full_date_range, fill_value=0)  # 用完整日期索引补齐缺失天数
+        .reset_index()
+    )
+    daily_sum.columns = ['time', 'amount']
 
     # 计算7日移动平均线
     daily_sum['MA7'] = daily_sum['amount'].rolling(
