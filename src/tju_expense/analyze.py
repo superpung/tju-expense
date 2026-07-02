@@ -35,6 +35,23 @@ def _make_table(title, caption=None):
     )
 
 
+def build_daily_sum(df):
+    """构造从年初到最后一条记录的每日消费序列, 缺失的日期补 0"""
+    max_date = df['time'].max().date()
+    start_of_year = pd.to_datetime(max_date.year * 10000 + 101, format='%Y%m%d').date()
+    full_date_range = pd.date_range(start=start_of_year, end=max_date, freq='D')
+
+    # 将未消费的天补一条值为0的消费，并按天累加
+    daily_sum = (
+        df.assign(date=df['time'].dt.normalize())  # 将 time 转成日期
+        .groupby('date')['amount']
+        .sum()
+        .reindex(full_date_range, fill_value=0)  # 用完整日期索引补齐缺失天数
+        .reset_index()
+    )
+    daily_sum.columns = ['time', 'amount']
+    return daily_sum
+
 def analyze(df_file, title, save_to):
     """分析交易数据并生成可视化图表"""
     try:
@@ -88,20 +105,8 @@ def analyze(df_file, title, save_to):
 
 def plot_consumption_heatmap(df, ax, title):
     """绘制消费热力图"""
-    # 构造时间周期
-    max_date = df['time'].max().date()
-    start_of_year = pd.to_datetime(max_date.year * 10000 + 101, format='%Y%m%d').date()
-    full_date_range = pd.date_range(start=start_of_year, end=max_date, freq='D')
-
-    # 将未消费的天补一条值为0的消费，并按天累加
-    daily_sum = (
-        df.assign(date=df['time'].dt.normalize())  # 将 time 转成日期
-        .groupby('date')['amount']
-        .sum()
-        .reindex(full_date_range, fill_value=0)  # 用完整日期索引补齐缺失天数
-        .reset_index()
-    )
-    daily_sum.columns = ['time', 'amount']
+    # 构造每日消费序列（缺失天补 0）
+    daily_sum = build_daily_sum(df)
 
     # 准备数据
     daily_sum['weekday'] = daily_sum['time'].dt.weekday
@@ -139,20 +144,8 @@ def plot_consumption_heatmap(df, ax, title):
 
 def plot_daily_trend(df, ax):
     """绘制每日消费趋势图"""
-    # 构造时间周期
-    max_date = df['time'].max().date()
-    start_of_year = pd.to_datetime(max_date.year * 10000 + 101, format='%Y%m%d').date()
-    full_date_range = pd.date_range(start=start_of_year, end=max_date, freq='D')
-
-    # 将未消费的天补一条值为0的消费，并按天累加
-    daily_sum = (
-        df.assign(date=df['time'].dt.normalize())  # 将 time 转成日期
-        .groupby('date')['amount']
-        .sum()
-        .reindex(full_date_range, fill_value=0)  # 用完整日期索引补齐缺失天数
-        .reset_index()
-    )
-    daily_sum.columns = ['time', 'amount']
+    # 构造每日消费序列（缺失天补 0）
+    daily_sum = build_daily_sum(df)
 
     # 计算7日移动平均线
     daily_sum['MA7'] = daily_sum['amount'].rolling(
