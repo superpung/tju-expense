@@ -7,11 +7,32 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from rich import box
 from rich.console import Console
+from rich.panel import Panel
 from rich.table import Table
 
 
 console = Console()
+
+# 品牌配色，与项目主色 (#00468c) 保持一致
+BRAND = "#00468c"
+BRAND_LIGHT = "#a1c9f4"
+MONEY_STYLE = "bold #e07b39"
+
+
+def _make_table(title, caption=None):
+    """创建风格统一的表格"""
+    return Table(
+        title=f"[bold {BRAND}]{title}[/]",
+        caption=caption,
+        caption_style="dim italic",
+        box=box.ROUNDED,
+        border_style=BRAND_LIGHT,
+        header_style=f"bold {BRAND}",
+        title_justify="center",
+        row_styles=["", "dim"],
+    )
 
 
 def analyze(df_file, title, save_to):
@@ -279,15 +300,29 @@ def print_statistics(df_file):
 
     df['time'] = pd.to_datetime(df['time'])
 
+    # 醒目展示总消费横幅
+    total_amount = df['amount'].sum()
+    console.print(
+        Panel(
+            f"[bold {BRAND}]总消费 [{MONEY_STYLE}]{total_amount:.2f}[/] 元[/]"
+            f"  ·  共 [{MONEY_STYLE}]{len(df)}[/] 笔",
+            box=box.DOUBLE,
+            border_style=BRAND,
+            padding=(1, 4),
+            expand=False,
+        ),
+        justify="center",
+    )
+
     # 创建表格
-    table = Table(title="消费统计")
+    table = _make_table("💰 消费总览")
 
     # 添加列
     table.add_column("统计项", justify="left", style="cyan", no_wrap=True)
-    table.add_column("数值", justify="right", style="magenta")
+    table.add_column("数值", justify="right", style=MONEY_STYLE)
 
     # 添加行
-    table.add_row("总消费金额", f"{df['amount'].sum():.2f}元")
+    table.add_row("总消费金额", f"{total_amount:.2f}元")
     daily_average = df.groupby(df['time'].dt.date)['amount'].sum().mean()
     table.add_row("平均每日消费", f"{daily_average:.2f}元")
     table.add_row("平均每笔消费", f"{df['amount'].mean():.2f}元")
@@ -297,30 +332,30 @@ def print_statistics(df_file):
 
     # 消费类型统计
     type_stats = df.groupby('type')['amount'].agg(['count', 'sum', 'mean']).round(2)
-    type_table = Table(title="消费类型统计")
+    type_table = _make_table("🍽️  消费类型统计")
 
     # 添加列
     type_table.add_column("类型", justify="left", style="cyan", no_wrap=True)
     type_table.add_column("笔数", justify="right", style="magenta")
-    type_table.add_column("总金额", justify="right", style="magenta")
-    type_table.add_column("平均金额", justify="right", style="magenta")
+    type_table.add_column("总金额", justify="right", style=MONEY_STYLE)
+    type_table.add_column("平均金额", justify="right", style=MONEY_STYLE)
 
     # 添加行
     for index, row in type_stats.iterrows():
-        type_table.add_row(index, str(row['count']), f"{row['sum']:.2f}元", f"{row['mean']:.2f}元")
+        type_table.add_row(index, f"{int(row['count'])}", f"{row['sum']:.2f}元", f"{row['mean']:.2f}元")
 
     console.print(type_table, justify="center")
 
     # 每月消费统计
     monthly_stats = df.groupby(df['time'].dt.to_period('M'))['amount'].agg(['count', 'sum']).reset_index()
     monthly_stats['time'] = monthly_stats['time'].dt.to_timestamp()  # 转换为时间戳以便显示
-    monthly_table = Table(title="每月消费统计")
+    monthly_table = _make_table("📅 每月消费统计")
     monthly_table.add_column("月份", justify="left", style="cyan", no_wrap=True)
     monthly_table.add_column("消费笔数", justify="right", style="magenta")
-    monthly_table.add_column("总金额", justify="right", style="magenta")
+    monthly_table.add_column("总金额", justify="right", style=MONEY_STYLE)
 
     for index, row in monthly_stats.iterrows():
-        monthly_table.add_row(f"{row['time'].month}月", str(row['count']), f"{row['sum']:.2f}元")
+        monthly_table.add_row(f"{row['time'].month}月", f"{int(row['count'])}", f"{row['sum']:.2f}元")
 
     console.print(monthly_table, justify="center")
 
@@ -337,15 +372,15 @@ def print_statistics(df_file):
         mask = (filtered_df['time'].dt.hour >= start) & (filtered_df['time'].dt.hour < end)
         time_slot_stats[slot] = filtered_df[mask]['amount'].agg(['count', 'sum'])
 
-    time_slot_table = Table(title="时段消费统计")
+    time_slot_table = _make_table("🕒 时段消费统计")
     time_slot_table.add_column("时段", justify="left", style="cyan", no_wrap=True)
     time_slot_table.add_column("消费笔数", justify="right", style="magenta")
-    time_slot_table.add_column("总金额", justify="right", style="magenta")
-    time_slot_table.add_column("平均金额", justify="right", style="magenta")
+    time_slot_table.add_column("总金额", justify="right", style=MONEY_STYLE)
+    time_slot_table.add_column("平均金额", justify="right", style=MONEY_STYLE)
 
     for slot, stats in time_slot_stats.items():
         avg_amount = stats['sum'] / stats['count'] if stats['count'] > 0 else 0
-        time_slot_table.add_row(slot, str(stats['count']), f"{stats['sum']:.2f}元", f"{avg_amount:.2f}元")
+        time_slot_table.add_row(slot, f"{int(stats['count'])}", f"{stats['sum']:.2f}元", f"{avg_amount:.2f}元")
 
     console.print(time_slot_table, justify="center")
 
@@ -362,9 +397,9 @@ def print_statistics(df_file):
     latest_time_pos_transaction = filtered_df.loc[filtered_df['time'].dt.time.idxmax()]
 
     # 创建表格
-    transaction_table = Table(title="单笔消费极值")
+    transaction_table = _make_table("🏆 单笔消费之最")
     transaction_table.add_column("类型", justify="left", style="cyan", no_wrap=True)
-    transaction_table.add_column("金额", justify="right", style="magenta")
+    transaction_table.add_column("金额", justify="right", style=MONEY_STYLE)
     transaction_table.add_column("时间", justify="left", style="magenta")
     transaction_table.add_column("地点", justify="left", style="magenta")
 
