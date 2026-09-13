@@ -13,7 +13,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime
 from matplotlib import font_manager
+from rich import box
 from rich.console import Console
+from rich.panel import Panel
 from rich.prompt import Prompt
 from tju_expense.analyze import analyze, print_statistics
 from tju_expense.fetch import URLS, Fetcher
@@ -77,7 +79,11 @@ def main():
         sys.exit(1)
 
     user_info = fetcher.get_user_info()
-    console.print(f"你好, [bold]{user_info['name']}[/bold]!")
+    greeting = f"你好, [bold]{user_info['name']}[/bold]!"
+    balance = user_info.get('balance')
+    if balance:
+        greeting += f" 校园卡当前余额 [bold #e07b39]{balance}[/bold #e07b39] 元"
+    console.print(greeting)
 
     user_dir = data_dir / user_info['stuid']
     user_dir.mkdir(exist_ok=True)
@@ -127,8 +133,20 @@ def main():
         if analyze_result:
             console.log(f"年度总结图表绘制完成! 已保存到 {fig_file}")
 
-    console.rule()
-    console.input(f"[green]以上是你的 {year} 年度消费报告, 请查收![/green] [dim]按 Enter 退出...[/dim]")
+    summary = f"[bold green]以上是你的 {year} 年度消费报告, 请查收![/bold green]"
+    if analyze_result:
+        summary += f"\n[dim]图表已保存至 {fig_file}[/dim]"
+    console.print(
+        Panel(
+            summary,
+            box=box.ROUNDED,
+            border_style="#00468c",
+            padding=(1, 4),
+            expand=False,
+        ),
+        justify="center",
+    )
+    console.input("[dim]按 Enter 退出...[/dim]")
 
 
 if __name__ == "__main__":
