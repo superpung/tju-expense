@@ -133,10 +133,12 @@ def main():
         if analyze_result:
             console.log(f"年度总结图表绘制完成! 已保存到 {fig_file}")
 
+    summary = f"[bold green]以上是你的 {year} 年度消费报告, 请查收![/bold green]"
+    if analyze_result:
+        summary += f"\n[dim]图表已保存至 {fig_file}[/dim]"
     console.print(
         Panel(
-            f"[bold green]以上是你的 {year} 年度消费报告, 请查收![/bold green]\n"
-            f"[dim]图表已保存至 {user_dir}[/dim]",
+            summary,
             box=box.ROUNDED,
             border_style="#00468c",
             padding=(1, 4),
