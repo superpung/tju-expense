@@ -19,6 +19,9 @@ URLS = {
     "records": f"{BASE_URL}/epay/consume/query",
 }
 
+# 请求超时时间（秒），避免在非校园网/代理异常时无限期挂起
+REQUEST_TIMEOUT = 15
+
 class Fetcher:
     def __init__(self, cookie: str):
         if not cookie.startswith("JSESSIONID"):
@@ -26,6 +29,8 @@ class Fetcher:
         else:
             self.cookie = cookie
         self.csrf = None
+        self.session = requests.Session()
+        self.session.headers.update({'Cookie': self.cookie})
         self.user_info = self.fetch_user_info()
 
     def get_user_info(self):
@@ -33,12 +38,9 @@ class Fetcher:
 
     def fetch_user_info(self):
         url = URLS["user_info"]
-        headers = {
-            'Cookie': self.cookie
-        }
         try:
-            response = requests.get(url, headers=headers)
-        except requests.exceptions.InvalidSchema as _:
+            response = self.session.get(url, timeout=REQUEST_TIMEOUT)
+        except requests.exceptions.RequestException as _:
             raise ConnectionError(f"[登录失败] 请确认正在使用校园网环境, 关闭终端代理, 或重启终端")
         soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -63,7 +65,9 @@ class Fetcher:
             elif '姓名' in attr[0]:
                 res['name'] = attr[1]
             elif '现金资金' in attr[0]:
-                res['balance'] = re.search('\\d+\\.\\d+', attr[1]).group()
+                balance_match = re.search(r'\d+\.\d+', attr[1])
+                if balance_match:
+                    res['balance'] = balance_match.group()
 
         return res
 
@@ -99,11 +103,7 @@ class Fetcher:
         }
         if not include_top_up:
             data["tradedirect"] = "1"
-        headers = {
-            "Cookie": self.cookie
-        }
-        s = requests.session()
-        response = s.post(url, data=data, headers=headers)
+        response = self.session.post(url, data=data, timeout=REQUEST_TIMEOUT)
         soup = BeautifulSoup(response.text, 'html.parser')
 
         res = []
