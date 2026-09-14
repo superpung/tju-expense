@@ -41,11 +41,16 @@ export function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => 
   const [stats, setStats] = useState<Stats | null>(null);
   const [records, setRecords] = useState<CardRecord[]>([]);
 
-  const load = useCallback(async (y: string) => {
-    setLoading(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const load = useCallback(async (y: string, refresh = false) => {
+    if (refresh) setRefreshing(true);
+    else setLoading(true);
     setError(null);
     try {
-      const res = await api.records(y);
+      const res = await api.records(y, refresh);
       setStats(res.stats);
       setRecords(res.records);
     } catch (e) {
@@ -54,12 +59,26 @@ export function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => 
       setRecords([]);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
   useEffect(() => {
     load(year);
   }, [year, load]);
+
+  const doExport = async () => {
+    setExporting(true);
+    setNotice(null);
+    try {
+      const path = await api.exportCsv(user.stuid ?? "unknown", year);
+      setNotice(path ? `已导出到 ${path}` : "已导出 CSV");
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : "导出失败");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const extremes = stats?.extremes ?? {};
 
@@ -79,6 +98,24 @@ export function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => 
               </button>
             ))}
           </div>
+          <Button
+            variant="ghost"
+            className="btn-sm"
+            onClick={() => load(year, true)}
+            loading={refreshing}
+            title="从校园卡重新拉取"
+          >
+            刷新
+          </Button>
+          <Button
+            variant="ghost"
+            className="btn-sm"
+            onClick={doExport}
+            loading={exporting}
+            disabled={!stats || stats.empty}
+          >
+            导出 CSV
+          </Button>
           <ThemeToggle />
           <Button variant="ghost" className="btn-sm" onClick={onLogout}>
             退出
@@ -96,6 +133,12 @@ export function Dashboard({ user, onLogout }: { user: UserInfo; onLogout: () => 
             </p>
           </div>
         </div>
+
+        {notice && (
+          <div className="alert alert-info" style={{ marginBottom: 16 }}>
+            {notice}
+          </div>
+        )}
 
         {loading && (
           <div className="row muted" style={{ gap: 10, padding: "60px 0", justifyContent: "center" }}>
