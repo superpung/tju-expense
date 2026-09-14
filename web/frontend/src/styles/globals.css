@@ -1,0 +1,94 @@
+/* Semantic layer on top of the raw Geist scale (geist-tokens.css).
+   Components reference these aliases, never raw --ds-* values, so light/dark
+   swap in one place. */
+:root {
+  --bg: var(--ds-background-200);
+  --panel: var(--ds-background-100);
+  --panel-hover: var(--ds-gray-100);
+  --fg: var(--ds-gray-1000);
+  --fg-secondary: var(--ds-gray-900);
+  --fg-muted: var(--ds-gray-700);
+  --fg-faint: var(--ds-gray-600);
+  --border: var(--ds-gray-400);
+  --border-strong: var(--ds-gray-500);
+  --accent: var(--ds-blue-700);
+  --accent-hover: var(--ds-blue-800);
+  --accent-fg: #fff;
+  --success: var(--ds-green-700);
+  --warning: var(--ds-amber-700);
+  --danger: var(--ds-red-800);
+  --money: var(--ds-amber-800);
+
+  --radius-sm: 5px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-full: 999px;
+
+  --shadow-border: 0 0 0 1px var(--ds-gray-400);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.06), 0 4px 12px -4px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px -6px rgba(0, 0, 0, 0.12);
+
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo,
+    Consolas, monospace;
+
+  --container: 1100px;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, h4 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+button {
+  font-family: inherit;
+}
+img {
+  max-width: 100%;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1;
+}
