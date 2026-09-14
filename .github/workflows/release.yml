@@ -48,3 +48,69 @@ jobs:
         tag_name: ${{ github.event.release.tag_name }}
         files: ./dist/${{ matrix.asset_name }}
         token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Desktop app (web/): build the Geist frontend, then bundle the pywebview
+  # launcher + FastAPI backend into a single binary per OS.
+  # Note: the Linux build needs GTK/WebKit for pywebview; that step is the most
+  # likely to need adjustment on a first real release run.
+  build-desktop:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset_name: tju-expense-desktop-linux
+          - os: windows-latest
+            asset_name: tju-expense-desktop-windows.exe
+          - os: macos-latest
+            asset_name: tju-expense-desktop-macos
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: npm
+        cache-dependency-path: web/frontend/package-lock.json
+
+    - name: Install Linux webview dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libgirepository1.0-dev gir1.2-gtk-3.0 gir1.2-webkit2-4.1 \
+          python3-gi python3-gi-cairo
+
+    - name: Build frontend
+      working-directory: web/frontend
+      run: |
+        npm ci
+        npm run build
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r web/desktop/requirements.txt
+        pip install .
+
+    - name: Create desktop executable
+      working-directory: web/desktop
+      env:
+        ASSET_NAME: ${{ matrix.asset_name }}
+      run: pyinstaller tju-expense-desktop.spec
+
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.event.release.tag_name }}
+        files: web/desktop/dist/${{ matrix.asset_name }}
+        token: ${{ secrets.GITHUB_TOKEN }}

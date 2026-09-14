@@ -8,6 +8,7 @@
 import os
 from PyInstaller.utils.hooks import collect_submodules
 
+asset_name = os.getenv("ASSET_NAME", "tju-expense")
 ROOT = os.path.abspath(os.path.join(os.getcwd(), "..", ".."))
 FRONTEND_DIST = os.path.join(ROOT, "web", "frontend", "dist")
 
@@ -34,7 +35,7 @@ exe = EXE(
     a.scripts,
     a.binaries,
     a.datas,
-    name="tju-expense",
+    name=asset_name,
     console=False,
     disable_windowed_traceback=False,
 )
