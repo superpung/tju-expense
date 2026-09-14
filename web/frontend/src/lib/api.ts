@@ -3,6 +3,13 @@
 // as the X-Session-Id header.
 const TOKEN_KEY = "tju-session";
 
+// Base URL of the backend. Empty by default so requests hit the same origin —
+// the dev server proxies /api to :8000, and a Netlify rewrite can do the same in
+// production. Set VITE_API_BASE at build time to call an absolute backend URL
+// instead (e.g. a Cloudflare Tunnel address); the backend must then allow this
+// site in CORS_ORIGINS.
+const API_BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
+
 function getToken(): string | null {
   try {
     return sessionStorage.getItem(TOKEN_KEY);
@@ -33,7 +40,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
   if (token) headers.set("X-Session-Id", token);
 
-  const res = await fetch(path, { ...init, headers });
+  const res = await fetch(API_BASE + path, { ...init, headers });
   const isJson = res.headers.get("content-type")?.includes("application/json");
   const body = isJson ? await res.json() : null;
   if (!res.ok) {
@@ -86,9 +93,38 @@ export const api = {
     return data.user;
   },
 
-  async records(year?: string): Promise<{ year: string; records: CardRecord[]; stats: Stats }> {
-    const q = year ? `?year=${encodeURIComponent(year)}` : "";
-    return request(`/api/records${q}`);
+  async records(
+    year?: string,
+    refresh = false,
+  ): Promise<{ year: string; records: CardRecord[]; stats: Stats }> {
+    const params = new URLSearchParams();
+    if (year) params.set("year", year);
+    if (refresh) params.set("refresh", "true");
+    const q = params.toString();
+    return request(`/api/records${q ? `?${q}` : ""}`);
+  },
+
+  /** Export the year's records as CSV. Desktop: native Save dialog via the
+   *  pywebview bridge; browser/local-web: a normal file download. */
+  async exportCsv(stuid: string, year: string): Promise<string | null> {
+    const bridge = (window as unknown as { pywebview?: PyWebview }).pywebview;
+    if (bridge?.api?.export_csv) {
+      const res = await bridge.api.export_csv(stuid, year);
+      if (!res.ok) throw new Error(res.error || "导出失败");
+      return res.path ?? null;
+    }
+    // Browser / local-web fallback: fetch with auth header, then save the blob.
+    const res = await fetch(`${API_BASE}/api/export?year=${encodeURIComponent(year)}`, {
+      headers: getToken() ? { "X-Session-Id": getToken()! } : {},
+    });
+    if (!res.ok) throw new Error(`导出失败 (${res.status})`);
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tju-${stuid}-${year}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    return null;
   },
 
   async logout(): Promise<void> {

@@ -1,0 +1,3 @@
+# Desktop app: local FastAPI server + native pywebview window.
+-r ../backend/requirements.txt
+pywebview>=5.3

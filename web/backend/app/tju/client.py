@@ -44,6 +44,7 @@ class TJUWebClient:
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": _UA})
         self._fetcher: Fetcher | None = None
+        self._user_info: dict | None = None
 
     def login(self, username: str, password: str) -> dict:
         """Submit the login form; return user info on success."""
@@ -86,6 +87,7 @@ class TJUWebClient:
             raise LoginError("用户名或密码错误，请重试。")
 
         self._fetcher = fetcher
+        self._user_info = info
         return info
 
     @property
@@ -99,7 +101,9 @@ class TJUWebClient:
         return self._fetcher
 
     def user_info(self) -> dict:
-        return self.fetcher.get_user_info()
+        if self._user_info is None:
+            self._user_info = self.fetcher.get_user_info()
+        return self._user_info
 
     def records(self, start: str, end: str) -> list[dict]:
         return self.fetcher.get_records(start=start, end=end)
