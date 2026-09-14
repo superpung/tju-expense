@@ -21,6 +21,21 @@
 
 ![Windows 执行结果](docs/windows.jpeg)
 
+## 图形界面版（桌面应用）
+
+除了下方的命令行版本，本项目还提供一个图形界面的桌面应用：用**用户名和密码**登录，直接查看校园卡消费流水、年度统计图表，并支持导出 CSV。界面遵循 [Geist](https://vercel.com/geist) 设计规范，支持浅色 / 深色主题。
+
+![桌面版界面](docs/web.png)
+
+从 [Releases](https://github.com/superpung/tju-expense/releases/latest) 下载对应平台的 `tju-expense-desktop-*`，双击即可运行：
+
+- [Windows](https://github.com/superpung/tju-expense/releases/latest/download/tju-expense-desktop-windows.exe)
+- [macOS](https://github.com/superpung/tju-expense/releases/latest/download/tju-expense-desktop-macos)
+- [Linux](https://github.com/superpung/tju-expense/releases/latest/download/tju-expense-desktop-linux)
+
+> [!NOTE]
+> 桌面应用需在**校园网环境**下运行（需访问校园卡内网），且无需手动获取 Cookie。从源码构建与打包的说明见 [`web/README.md`](web/README.md)。
+
 ## 使用方法
 
 > [!NOTE]
