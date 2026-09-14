@@ -1,0 +1,10 @@
+# Web backend for TJU-Expense.
+# Reuses the root `tju_expense` package (install it too: `pip install -e ../..`).
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.9.0
+# Transitively required by the reused `tju_expense` package:
+requests>=2.32.3
+beautifulsoup4>=0.0.2
+pandas>=2.2.3
+python-dotenv>=1.0.1
